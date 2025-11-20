@@ -8,7 +8,7 @@ use crate::{
 };
 
 /// Transport-level errors occur when a peer violates the protocol specification
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Error {
     /// Type of error
     pub code: Code,
@@ -16,7 +16,11 @@ pub struct Error {
     pub frame: Option<frame::FrameType>,
     /// Human-readable explanation of the reason
     pub reason: String,
+    /// An underlying TLS layer error
+    pub tls_error: Option<rustls::Error>,
 }
+
+impl Eq for Error {}
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -39,6 +43,7 @@ impl From<Code> for Error {
             code: x,
             frame: None,
             reason: "".to_string(),
+            tls_error: None,
         }
     }
 }
@@ -79,6 +84,7 @@ macro_rules! errors {
                     code: Code::$name,
                     frame: None,
                     reason: reason.into(),
+                    tls_error: None,
                 }
             }
             )*
